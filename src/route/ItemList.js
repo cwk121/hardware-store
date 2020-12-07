@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Nav } from 'react-bootstrap';
 import ItemBlock from '../component/ItemBlock';
-import _ from 'lodash';
 
 function ItemList({ category }) {
   const api = useSelector(state => state.api);
@@ -25,44 +24,63 @@ function ItemList({ category }) {
         setFiltered(data);
         const brands = [...new Set(data.map(item => item.brand))];
         setBrands(brands);
-        
+
         // Reset filters
         setBrandFilter('all');
         setOrder('default');
         setFromPrice('');
         setToPrice('');
         setNameFilter('');
-        
+
         dispatch({ type: "set_loading", payload: false });
       });
   }, [category]);
 
   useEffect(() => {
+    setFiltered(filterItems());
+  }, [fromPrice, toPrice, nameFilter, brandFilter, order]);
+
+  function filterItems() {
     let filteredItems = [...items];
-    if (fromPrice !== '') {
-      filteredItems = _.filter(filteredItems, (i) => i.price >= fromPrice || (i.discounted_price !== null && i.discounted_price >= fromPrice));
-    }
-    if (toPrice !== '') {
-      filteredItems = _.filter(filteredItems, (i) => i.price <= toPrice || (i.discounted_price !== null && i.discounted_price <= toPrice));
-    }
-    if (nameFilter !== '') {
-      filteredItems = _.filter(filteredItems, (i) => i.name.toLowerCase().includes(nameFilter));
-    }
-    if (brandFilter !== 'all') {
-      filteredItems = _.filter(filteredItems, (i) => i.brand === brandFilter);
-    }
+    let indexToRemove = [];
+
+    filteredItems.forEach((item, index) => {
+      let finalPrice = item.discounted_price ? item.discounted_price : item.price;
+      item.final_price = finalPrice;
+
+      if (nameFilter !== '' && !item.name.toLowerCase().includes(nameFilter)) {
+        indexToRemove.push(index);
+        return;
+      }
+      if (brandFilter !== 'all' && item.brand !== brandFilter) {
+        indexToRemove.push(index);
+        return;
+      }
+      if (fromPrice !== '' && finalPrice < fromPrice) {
+        indexToRemove.push(index);
+        return;
+      }
+      if (toPrice !== '' && finalPrice > toPrice) {
+        indexToRemove.push(index);
+        return;
+      }
+    });
+
+    indexToRemove = indexToRemove.sort((a, b) => b - a);
+    indexToRemove.forEach(index => {
+      filteredItems.splice(index, 1);
+    });
+
     if (order !== 'default') {
-      filteredItems.forEach(item => {
-        item.final_price = item.discounted_price ? item.discounted_price : item.price;
-      })
       if (order === 'asc') {
-        filteredItems = _.orderBy(filteredItems, ['final_price'], ['asc']);
+        filteredItems = filteredItems.sort((a, b) => a.final_price - b.final_price);
       } else if (order === 'desc') {
-        filteredItems = _.orderBy(filteredItems, ['final_price'], ['desc']);
+        filteredItems = filteredItems.sort((a, b) => b.final_price - a.final_price);
       }
     }
-    setFiltered(filteredItems);
-  }, [fromPrice, toPrice, nameFilter, brandFilter, order]);
+
+    return filteredItems;
+  }
 
   return (
     <div className="container item-list">
