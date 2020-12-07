@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Card, Row, Col } from 'react-bootstrap';
 
 // import Swiper core and required components
-import SwiperCore, { Navigation, Pagination, Scrollbar, A11y } from 'swiper';
+import SwiperCore, { Navigation, Pagination, A11y } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
 // Import Swiper styles
@@ -38,7 +38,7 @@ function Home() {
         onSlideChange={() => console.log('slide change')}
       >
         <SwiperSlide>
-          <img className="w-100" src={`${api}/uploads/0ba3d60362c7e6d256cfc1f37156bad9_9d56e391c4.jpg`} />
+          <img className="w-100" src={`${api}/uploads/0ba3d60362c7e6d256cfc1f37156bad9_9d56e391c4.jpg`} alt="banner" />
           <div id="banner-text">
             Hardware Store
           </div>

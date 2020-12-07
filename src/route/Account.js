@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Table } from 'react-bootstrap';
 
 function Account() {
-  const [api, user, jwt] = useSelector(state => [state.api, state.user, state.jwt]);
+  const [api, jwt] = useSelector(state => [state.api, state.jwt]);
   const dispatch = useDispatch();
   const [orders, setOrders] = useState([]);
 

@@ -27,7 +27,7 @@ function ItemBlock({ item }) {
         height="80"
         className="mr-3"
         src={api + item.image[0].formats.thumbnail.url}
-        alt="item image"
+        alt={item.name}
       />
       <Media.Body>
         <h5>
