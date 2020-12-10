@@ -14,12 +14,16 @@ function CheckoutModal({ showCheckout, setShowCheckout, setMessage }) {
   useEffect(() => {
     if (showCheckout === true) {
       setReady(false);
-      createOrder();
+      prepareOrder();
     }
     setReady(true);
   }, [showCheckout]);
 
-  async function createOrder() {
+  if (!ready) {
+    return <div>Loading...</div>;
+  }
+
+  async function prepareOrder() {
     // Sync items information from server
     let updatedItems = [];
     for (let item of cart) {
@@ -41,7 +45,8 @@ function CheckoutModal({ showCheckout, setShowCheckout, setMessage }) {
     setTotal(total);
   }
 
-  function handleCheckout() {
+  async function handleSubmit(e) {
+    e.preventDefault();
     dispatch({ type: "set_loading", payload: true });
     fetch(`${api}/orders`, {
       method: "POST",
@@ -66,10 +71,6 @@ function CheckoutModal({ showCheckout, setShowCheckout, setMessage }) {
       })
   }
 
-  
-  if (!ready) {
-    return <div>Loading...</div>;
-  }
   return (
     <Modal
       show={showCheckout}
@@ -83,7 +84,7 @@ function CheckoutModal({ showCheckout, setShowCheckout, setMessage }) {
           </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Form>
+        <Form onSubmit={handleSubmit} id="checkout-form">
           <Form.Row>
             <Form.Group as={Col} controlId="name">
               <Form.Label>Name</Form.Label>
@@ -99,41 +100,39 @@ function CheckoutModal({ showCheckout, setShowCheckout, setMessage }) {
             <Form.Label>Address</Form.Label>
             <Form.Control type="text" value={address} onChange={e => setAddress(e.target.value)} required />
           </Form.Group>
-        </Form>
 
-        <Table striped bordered hover size="sm" className="mt-2">
-          <thead>
-            <tr>
-              <th>Product Name</th>
-              <th>Price</th>
-              <th>Quantity</th>
-              <th>Subtotal</th>
-            </tr>
-          </thead>
-          <tbody>
-            {cart.map(item => (
-              <tr key={item.id}>
-                <td>{item.name}</td>
-                <td>{item.discounted_price ? <span><strike>{item.price}</strike> ${item.discounted_price}</span> : item.price}</td>
-                <td>{item.quantity}</td>
-                <td>${item.discounted_price ? item.discounted_price * item.quantity : item.price * item.quantity}</td>
+          <Table striped bordered hover size="sm" className="mt-2">
+            <thead>
+              <tr>
+                <th>Product Name</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Subtotal</th>
               </tr>
-            ))}
-            <tr>
-              <th colSpan="3">Total</th>
-              <th>${total}</th>
-            </tr>
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {cart.map(item => (
+                <tr key={item.id}>
+                  <td>{item.name}</td>
+                  <td>{item.discounted_price ? <span><strike>{item.price}</strike> ${item.discounted_price}</span> : item.price}</td>
+                  <td>{item.quantity}</td>
+                  <td>${item.discounted_price ? item.discounted_price * item.quantity : item.price * item.quantity}</td>
+                </tr>
+              ))}
+              <tr>
+                <th colSpan="3">Total</th>
+                <th>${total}</th>
+              </tr>
+            </tbody>
+          </Table>
+
+          <div className="d-flex align-items-end flex-column">
+            <Button type="submit" variant="primary">
+              Confirm
+            </Button>
+          </div>
+        </Form>
       </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={() => setShowCheckout(false)}>
-          Cancel
-          </Button>
-        <Button variant="primary" onClick={handleCheckout}>
-          Confirm
-          </Button>
-      </Modal.Footer>
     </Modal>
   );
 }

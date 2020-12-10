@@ -54,8 +54,6 @@ function App() {
 
       <Footer />
     </Router>
-
-
   );
 }
 
